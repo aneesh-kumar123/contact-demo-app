@@ -7,78 +7,71 @@ const cookieParser = require('cookie-parser')
 const User = require('./user/service/user')
 
 const bcrypt = require("bcrypt");
-const { Payload} = require('../middlewares/authorization')
+const { Payload} = require('../middlewares/authorization');
+const NotFoundError = require('../errors/notFoundError');
+const badRequest = require('../errors/badRequest');
 
-router.use(cookieParser())
 
-let Admin = User.createAdmin("ajinkya_bhagat", "Ajinkya", "bhagat", "12345");
-//ignore
-router.post('/loginAdmin' , async (req , res) => {
+router.use(cookieParser());
+
+
+let Admin;
+router.post('/createAdmin' , async (req , res , next) => {
     try {
-        
-        let { username, password } = req.body
-        //validation
-        if(typeof username != "string"){
-            throw new Error("username is invalid")
-        }
-    
-        if(typeof password != "string"){
-            throw new Error("password is invalid")
-        }
-
-       
-        const admin = Admin.findAdminByusername(username);
-
-        if(!admin){
-            throw new Error("admin does not exist");
-        }
-
-        if((password === admin.password)){
-            let payload = Payload.newPayload(admin.userID , admin.isAdmin);
-            let token = payload.signPayload();
-            //send cookie
-            res.cookie("auth", `Bearer ${token}`)
-            //send into header
-            res.set("auth", `Bearer ${token}`)
-            res.status(200).send(token)
-        }else{
-            res.status(403).json({
-                message : "password incorrect"
-            })
-        }
-
-
-    
+        Admin = await User.createAdmin("ajinkya_bhagat", "Ajinkya", "Bhagat", "12345");
+        res.status(200).json(Admin)
     } catch (error) {
-        console.log(error);
+       next(error);
     }
 })
 
-router.post('/login', async (req, res) => {
+// const creatAdmin = async () => {
+//     try {
+//         Admin = await User.createAdmin("ajinkya_bhagat", "Ajinkya", "Bhagat", "12345");
+//         //res.status(200).json(Admin)
+//         console.log(Admin);
+//     } catch (error) {
+//        //next(error);
+//     }
+// }
+
+// creatAdmin();
+
+// console.log(Admin , "hsdhjdhs");
+
+
+
+
+
+
+router.post('/login', async (req, res , next) => {
+  
     try {
     let { username, password } = req.body
     //validation
     if(typeof username != "string"){
-        throw new Error("username is invalid")
+        throw new badRequest("username is invalid")
     }
 
     if(typeof password != "string"){
-        throw new Error("password is invalid")
+        throw new badRequest("password is invalid")
     }
 
     //const Admin = await createAdmin();
     //logic to check username and password
-    const user = Admin.findUserByUsename(username);
+  
+    
+    const user =  Admin.findUser(username);
 
     if(!user){
-        throw new Error("user does not exist");
+        throw new NotFoundError("user does not exist");
     }
 
     if(await bcrypt.compare(password , user.password)){
         let payload = Payload.newPayload(user.userID , user.isAdmin);
         let token = payload.signPayload();
         //send cookie
-        res.cookie("auth", `Bearer ${token}`)
+        res.cookie("auth", `Bearer ${token}`);
         //send into header
         res.set("auth", `Bearer ${token}`)
         res.status(200).send(token)
@@ -89,7 +82,7 @@ router.post('/login', async (req, res) => {
     }
     
     } catch (error) {
-        console.log(error);
+        next(error);
     }
 })
 

@@ -189,9 +189,6 @@ class Contact{
                 throw new Error("contact details id must be greater than 0");
             }
 
-            if(contactDetailID > this.contactDetails.length){
-                throw new Error("id does not exist");
-            }
 
             
             this.contactDetails = this.contactDetails.filter(contactDetail => contactDetail.getContactDetailID() != contactDetailID);

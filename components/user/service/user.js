@@ -17,8 +17,9 @@ const bcrypt = require("bcrypt");
 
 class User{
     static ID = 0;
-    static #AllAdmin = [];
+    static AllAdmin = [];
     static #AllStaff = [];
+    static #AllUsers = [];
     constructor(userID, username , firstName, lastName,password, isAdmin, isActive, contacts){
         this.userID = userID;
         this.username = username;
@@ -30,7 +31,7 @@ class User{
         this.contacts = contacts;
     }
 
-    static  createAdmin(username , firstName , lastName , password){
+    static async createAdmin(username , firstName , lastName , password){
         try {
             if(typeof firstName != "string"){
                 throw new Error("firstname is invalid");
@@ -40,9 +41,10 @@ class User{
                 throw new Error("lastname is invalid");
             }
 
-
-            let tempAdmin = new User(++User.ID , username ,  firstName, lastName, password,  true , true , []);
-            User.#AllAdmin.push(tempAdmin);
+            const hashedPassword = await bcrypt.hash(password , 10);
+            let tempAdmin = new User(++User.ID , username ,  firstName, lastName, hashedPassword,  true , true , []);
+            User.AllAdmin.push(tempAdmin);
+            User.#AllUsers.push(tempAdmin);
             return tempAdmin;
             
         } catch (error) {
@@ -74,12 +76,22 @@ class User{
 
             let tempStaff = new User(++User.ID,username, firstName, lastName, hashedPassword, false, true, []);
             User.#AllStaff.push(tempStaff);
+            User.#AllUsers.push(tempStaff);
             return tempStaff;
             
         } catch (error) { 
             console.log(error);
         }
     }
+
+    static findAdmin(){
+        try {
+            return User.AllAdmin[0];
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
 
     //read
     //get All staff
@@ -113,9 +125,9 @@ class User{
                 throw new Error("username is invalid");
             }
 
-            for(let i=0; i<User.#AllAdmin.length; i++){
-                if(User.#AllAdmin[i].username == username){
-                    return User.#AllAdmin[i];
+            for(let i=0; i<User.AllAdmin.length; i++){
+                if(User.AllAdmin[i].username == username  && User.AllAdmin[i].isActive){
+                    return User.AllAdmin[i];
                 }
             }
 
@@ -126,7 +138,21 @@ class User{
         }
     }
 
-    findUserByUsename(username){
+    findUser(username){
+        try {
+            for(let i=0; i<User.#AllUsers.length; i++){
+                if(User.#AllUsers[i].username === username && User.#AllUsers[i].isActive){
+                    return User.#AllUsers[i];
+                }
+            }
+    
+            return null;
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    findUserByUsername(username){
         try {
             if(!this.isAdmin){
                 throw new Error("user is not Admin")
@@ -140,7 +166,7 @@ class User{
             }
 
             for(let i=0; i<User.#AllStaff.length; i++){
-                if(User.#AllStaff[i].username == username){
+                if(User.#AllStaff[i].username == username && User.#AllUsers[i].isActive){
                     return User.#AllStaff[i];
                 }
             }
@@ -148,7 +174,7 @@ class User{
             return null;
 
         } catch (error) {
-            
+            console.log(error);
         }
     }
 
@@ -350,7 +376,7 @@ class User{
         let allContacts = this.contacts;
         let reqContact;
         for(let i=0; i<allContacts.length; i++){
-            if(allContacts[i].getContactID() == id){
+            if(allContacts[i].getContactID() === id){
                 reqContact = allContacts[i];
                 break;
             }
@@ -501,6 +527,7 @@ class User{
 
     
 }
+
 
 
 module.exports = User;

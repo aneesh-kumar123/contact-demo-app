@@ -1,27 +1,27 @@
 const jwt = require('jsonwebtoken')
-// const UnAuthorizedError = require('../errors/unAuthorizedError')
+const UnAuthorizedError = require('../errors/unAuthorizedError')
+const Logger = require('../utils/logger')
+
 const secrateKey = 'ascvyudhaijkms'
 
 const verifyAdmin = (req, res, next) => {
     try {
         
-        console.log("verifyAdmin started")
-        if (!req.cookies['auth'] && !req.headers['Auth']) {
-            throw new Error("Cookie Not Found")
+        Logger.info("verifyAdmin started")
+        if (!req.cookies['auth'] && !req.headers['auth']) {
+            throw new UnAuthorizedError("Cookie Not Found")
         }
         //token??
         let token = req.cookies['auth'].split(" ")[2];
         
        
         let payload = Payload.verifyToken(token);
-
-        console.log(payload);
         
         if (!payload.isAdmin) {
-            throw new Error("jhjgj")
+            throw new UnAuthorizedError("on admin can pefrorm this opration")
         }
-        console.log("verifyAdmin ended")
-        console.log("next called")
+        Logger.info("verifyAdmin ended")
+        Logger.info("next called")
         next();
     } catch (error) {
         next(error)
@@ -29,22 +29,21 @@ const verifyAdmin = (req, res, next) => {
 }
 const verifyStaff = (req, res, next) => {
     try {
-        console.log("verifystaff started")
+        Logger.info("verifystaff started")
         if (!req.cookies['auth'] && !req.headers['auth']) {
-            throw new Error()
+            throw new UnAuthorizedError("Cookie Not Found");
         }
         //token??
         let token = req.cookies['auth'].split(" ")[2];
         let payload = Payload.verifyToken(token);
         if (payload.isAdmin) {
-            throw new Error("Admin cant do this oprations , only user can do...")
+            throw new UnAuthorizedError("Admin cant do this oprations , only user can do...")
         }
-        console.log("verifystaff ended")
-        console.log("next called")
+        Logger.info("verifystaff ended")
+        Logger.info("next called")
         next()
     } catch (error) {
-        console.log(error)
-        res.status(500).send(error)
+        next(error);
     }
 }
 

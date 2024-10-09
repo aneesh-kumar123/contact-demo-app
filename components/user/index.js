@@ -7,7 +7,7 @@ const { verifyAdmin, verifyStaff } = require('../../middlewares/authorization')
 const userRouter = express.Router()
 //api/v1/contact-app/user/
 // userRouter.use(verifyAdmin);
-userRouter.get('/',verifyAdmin , getAllUsers )// /api/v1/contact-app/user/
+userRouter.get('/',verifyAdmin , getAllUsers)// /api/v1/contact-app/user/
 userRouter.get('/:id' , verifyAdmin ,  getUser)
 userRouter.post('/' , verifyAdmin ,createUser)
 userRouter.put('/:id' ,verifyAdmin ,  updateUser)

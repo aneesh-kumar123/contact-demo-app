@@ -21,9 +21,11 @@ const createContactDetails = (req, res) => {
 
     const { number, email } = req.body;
 
+    let Admin =  User.AllAdmin[0];
+
     let user = Admin.getStaffById(userID);
 
-     const contactDetail = user.newContactDetail(contactID, number, email);
+     const contactDetail = user.newContactDetails(contactID, number, email);
     res.status(201).json(contactDetail);
   } catch (error) {
     res.status(500).json({ error: "Something went wrong..." });
@@ -49,6 +51,8 @@ const getAllContactDetailsOfUser = (req, res) => {
     if (contactID < 0){
         throw new Error("invalid contact id!");
     }
+
+    let Admin =  User.AllAdmin[0];
 
     let user = Admin.getStaffById(userID);
 
@@ -84,10 +88,11 @@ const getContactDetailsByID = (req, res) => {
     if (cdID < 0){
         throw new Error("invalid contact id!");
     }
-
+    let Admin =  User.AllAdmin[0];
     let user = Admin.getStaffById(userID);
 
     const contactDetail = user.getContactsDetailById(contactID, cdID);
+    console.log(contactDetail);
     res.status(200).json(contactDetail);
   } catch (error) {
     res.status(500).json({ error: "Something went wrong..." });
@@ -124,6 +129,8 @@ const updateContactDetailsByID = (req, res) => {
     if (typeof parameter != "string"){
         throw new Error("invalid parameter type...");
     }
+
+    let Admin =  User.AllAdmin[0];
 
     let user = Admin.getStaffById(userID);
 
@@ -162,12 +169,11 @@ const deleteContactDetailsByID = (req, res) => {
         throw new Error("invalid contact id!");
     }
 
-    if (typeof parameter != "string"){
-        throw new Error("invalid parameter type...");
-    }
-
+    let Admin =  User.AllAdmin[0];
+    //console.log(Admin);
     let user = Admin.getStaffById(userID);
-    user.deleteContactDetailsByID(userID, contactID, cdID);
+    //console.log(user);
+    user.deleteContactDetailsByID(contactID, cdID);
    
   } catch (error) {
     res.status(500).json({ error: "Something went wrong" });
